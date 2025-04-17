@@ -1,0 +1,73 @@
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(readxl)
+
+# === PARAMÈTRES ===
+basename <- "Lobster_5000SNPs"        # préfixe des fichiers PLINK/ADMIXTURE
+K_values <- 2:10                      # valeurs de K à tester
+fam_file <- paste0(basename, ".fam") # fichier .fam
+meta_file <- "Merged_Lobster_Data.xlsx"  # fichier avec Sample_ID et Population_ID
+
+# === IMPORT DES DONNÉES ===
+
+# Lire le .fam
+fam <- read.table(fam_file)
+colnames(fam)[2] <- "Sample_ID"
+
+# Lire les métadonnées (attention à l'encodage des colonnes)
+meta <- read_excel(meta_file)
+meta <- meta %>% rename(Sample_ID = `Sample ID 2`)
+
+# Harmoniser les IDs (si besoin)
+fam$Sample_ID <- as.character(fam$Sample_ID)
+meta$Sample_ID <- as.character(meta$Sample_ID)
+
+# Fusion
+fam_meta <- left_join(fam, meta, by = "Sample_ID")
+
+# Créer un dossier de sortie
+dir.create("ADMIXTURE_plots", showWarnings = FALSE)
+
+# === BOUCLE SUR LES K ===
+for (K in K_values) {
+  
+  Qfile <- paste0(basename, ".", K, ".Q")
+  if (!file.exists(Qfile)) {
+    cat("Fichier manquant pour K =", K, "\n")
+    next
+  }
+  
+  Q <- read.table(Qfile)
+  colnames(Q)[1:K] <- paste0("Cluster", 1:K)
+  
+  Q$Sample_ID <- fam_meta$Sample_ID
+  Q$Population <- fam_meta$`Population ID`
+  
+  # Format long pour ggplot
+  Q_long <- Q %>%
+    pivot_longer(cols = starts_with("Cluster"), 
+                 names_to = "Cluster", values_to = "Ancestry")
+  
+  Q_long$Sample_ID <- factor(Q_long$Sample_ID, levels = fam_meta$Sample_ID)
+  
+  # === Créer le graphique ===
+  p <- ggplot(Q_long, aes(x = Sample_ID, y = Ancestry, fill = Cluster)) +
+    geom_bar(stat = "identity", width = 1) +
+    facet_grid(~ Population, scales = "free_x", space = "free_x") +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      panel.spacing = unit(0.1, "lines"),
+      strip.text = element_text(size = 6)
+    ) +
+    labs(title = paste("Structure génétique – K =", K),
+         x = NULL, y = "Proportion d'ancestralité")
+  
+  # === Sauvegarder ===
+  ggsave(filename = paste0("ADMIXTURE_plots/admixture_K", K, ".png"),
+         plot = p, width = 10, height = 4 + K * 0.2, dpi = 300)
+  
+  cat("Graphique pour K =", K, "enregistré.\n")
+}
