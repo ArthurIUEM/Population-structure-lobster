@@ -144,3 +144,57 @@ ggplot(Q_long, aes(x = Indiv, y = Ancestry, fill = Cluster)) +
         axis.ticks.x = element_blank(),
         panel.spacing = unit(0.1, "lines"),
         plot.title = element_text(hjust = 0.5))
+
+
+
+
+
+
+library(tidyverse)
+library(readxl)
+
+# --- Paramètres ---
+K <- 9
+qfile <- paste0("lobster_top5000.", K, ".Q")
+famfile <- "lobster_top5000.fam"
+meta_xlsx <- "Merged_Lobster_Data.xlsx"
+
+# --- Charger les fichiers ADMIXTURE ---
+Q <- read.table(qfile)
+colnames(Q) <- paste0("Cluster", 1:K)
+
+fam <- read.table(famfile)
+colnames(fam)[1] <- "FID"
+
+# --- Charger les métadonnées ---
+meta <- read_excel(meta_xlsx)
+
+# S'assurer que les ID sont bien comparables
+meta <- meta %>%
+  mutate(FID = as.character(`Sample ID 2`))
+
+# Ajouter les ID au Q matrix
+Q <- Q %>%
+  mutate(FID = fam$FID) %>%
+  left_join(meta[, c("FID", "Population ID")], by = "FID") %>%
+  rename(Population = `Population ID`) %>%
+  arrange(Population) %>%
+  mutate(Indiv = factor(FID, levels = FID))
+
+# --- Long format pour ggplot ---
+Q_long <- Q %>%
+  pivot_longer(cols = starts_with("Cluster"), names_to = "Cluster", values_to = "Ancestry")
+
+# --- ADMIXTURE plot par Population ID ---
+ggplot(Q_long, aes(x = Indiv, y = Ancestry, fill = Cluster)) +
+  geom_bar(stat = "identity", width = 1) +
+  facet_grid(~ Population, scales = "free_x", space = "free_x") +
+  scale_fill_brewer(palette = "Set1") +
+  theme_minimal() +
+  labs(title = paste("ADMIXTURE plot (K =", K, ") par population"),
+       x = "Individus",
+       y = "Proportion d’ancestralité") +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        panel.spacing = unit(0.1, "lines"),
+        plot.title = element_text(hjust = 0.5))
