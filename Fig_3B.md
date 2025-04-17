@@ -1,3 +1,21 @@
+./plink --bfile Lobster_no_024712526 --extract snps_subset.txt --make-bed --out Lobster_5000SNPs --allow-extra-chr
+
+admixture Lobster_5000SNPs.bed K
+
+# Lire le fichier .bim
+bim <- read.table("Lobster_no_024712526.bim", header = FALSE)
+
+# Vérification du nombre total de SNPs disponibles
+cat("Nombre total de SNPs dans le fichier :", nrow(bim), "\n")
+
+# Tirer 5 000 SNPs au hasard (sans remplacement)
+set.seed(42)  # pour rendre les tirages reproductibles
+subset_snps <- sample(bim$V2, 5000)
+
+# Sauvegarder la liste dans un fichier texte
+write.table(subset_snps, file = "snps_subset.txt", 
+            row.names = FALSE, col.names = FALSE, quote = FALSE)
+
 library(ggplot2)
 library(dplyr)
 library(tidyr)
