@@ -89,3 +89,58 @@ for (K in K_values) {
   
   cat("Graphique pour K =", K, "enregistré.\n")
 }
+
+
+
+
+./plink --bfile Lobster_no_024712526 \
+       --extract top5000_snps.txt \
+       --make-bed \
+       --out lobster_top5000 \
+       --allow-extra-chr
+
+for K in 2 3 4 5 6 7 8 9 10; do
+    ./admixture --cv lobster_top5000.bed $K | tee log${K}.out
+done
+
+library(tidyverse)
+
+# --- Paramètres à adapter ---
+K <- 2
+qfile <- paste0("lobster_top5000.", K, ".Q")
+famfile <- "lobster_top5000.fam"
+meta <- read.table("UMAP_zones_latitude.tsv", header = TRUE, sep = "\t")
+
+# --- Charger les données ADMIXTURE ---
+Q <- read.table(qfile)
+colnames(Q) <- paste0("Cluster", 1:K)
+
+fam <- read.table(famfile)
+colnames(fam)[1] <- "FID"
+
+# --- Joindre les IDs et les métadonnées ---
+Q <- Q %>%
+  mutate(FID = fam$V1) %>%
+  left_join(meta[, c("FID", "ZONE")], by = "FID")
+
+# --- Réordonner par ZONE si souhaité ---
+Q <- Q %>%
+  arrange(ZONE) %>%
+  mutate(Indiv = factor(FID, levels = FID)) # pour garder l’ordre dans le plot
+
+# --- Barplot ADMIXTURE ---
+Q_long <- Q %>%
+  pivot_longer(cols = starts_with("Cluster"), names_to = "Cluster", values_to = "Ancestry")
+
+ggplot(Q_long, aes(x = Indiv, y = Ancestry, fill = Cluster)) +
+  geom_bar(stat = "identity", width = 1) +
+  facet_grid(~ ZONE, scales = "free_x", space = "free_x") +
+  scale_fill_brewer(palette = "Set1") +
+  theme_minimal() +
+  labs(title = paste("ADMIXTURE plot (K =", K, ")"),
+       x = "Individus",
+       y = "Proportion d’ancestralité") +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        panel.spacing = unit(0.1, "lines"),
+        plot.title = element_text(hjust = 0.5))
