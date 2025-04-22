@@ -1,16 +1,28 @@
-library(tidyverse)
+library(readr)
+library(dplyr)
 
 # Charger les FST
-fst_data <- read.table("lobster_fst.fst", header = TRUE)
+fst_data <- read_tsv("lobster_fst.fst")
 
-# Trier les SNPs par FST décroissant
-fst_sorted <- fst_data %>% arrange(desc(FST))
+# Garder les 150000 SNPs avec FST les plus élevés
+top_fst <- fst_data %>%
+  arrange(desc(FST)) %>%
+  slice(1:150000)
 
-# Garder le top 1%
-n_top <- ceiling(0.01 * nrow(fst_sorted))
-top_snps <- fst_sorted[1:n_top, "SNP"]  # Remplace "SNP" si le nom de colonne est différent
+# Sauvegarder la liste des SNPs à garder
+write_tsv(top_fst %>% select(SNP), "top150k_snps.txt", col_names = FALSE)
 
-# Sauvegarder dans un fichier
-write.table(top_snps, "top1pct_snps.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
+# Générer un fichier avec uniquement les 150k meilleurs SNPs
+./plink --bfile Lobster1MB --extract top150k_snps.txt --make-bed --out Lobster1MB_topFST --allow-extra-chr
 
-./plink --bfile Lobster1MB --extract top1pct_snps.txt --recodeA --out top1pct_genotypes --allow-extra-chr
+# Sous-échantillonnage Nord/Sud
+awk 'NR>1 && $5 == "Nord" {print $1, $1}' UMAP_zones_latitude.tsv > nord_ids.txt
+awk 'NR>1 && $5 == "Sud"  {print $1, $1}' UMAP_zones_latitude.tsv > sud_ids.txt
+
+plink2 --bfile Lobster1MB_topFST --keep nord_ids.txt --make-bed --out Lobster_Nord_topFST
+plink2 --bfile Lobster1MB_topFST --keep sud_ids.txt --make-bed --out Lobster_Sud_topFST
+
+# Recode en .raw pour l'analyse RDA
+plink2 --bfile Lobster_Nord_topFST --recode A --out Lobster_Nord_topFST
+plink2 --bfile Lobster_Sud_topFST --recode A --out Lobster_Sud_topFST
+
