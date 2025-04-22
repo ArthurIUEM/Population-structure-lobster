@@ -1,3 +1,19 @@
+# Extraire la zone et créer un fichier FID ZONE
+cut -f1,5 UMAP_zones_latitude.tsv > lobster_zones.txt
+
+# Créer les fichiers north_keep.txt et south_keep.txt au format FID IID
+awk '$2 == "Nord" {print $1, $1}' lobster_zones.txt > north_keep.txt
+awk '$2 == "Sud"  {print $1, $1}' lobster_zones.txt > south_keep.txt
+
+awk '{print $1, $2, 1}' north_keep.txt > clusters.txt
+awk '{print $1, $2, 2}' south_keep.txt >> clusters.txt
+
+./plink --bfile Lobster_no_024712526 \
+        --within clusters.txt \
+        --fst \
+        --allow-extra-chr \
+        --out lobster_fst
+
 library(ggplot2)
 library(dplyr)
 
