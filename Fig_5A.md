@@ -12,17 +12,15 @@ top_fst <- fst_data %>%
 # Sauvegarder la liste des SNPs à garder
 write_tsv(top_fst %>% select(SNP), "top150k_snps.txt", col_names = FALSE)
 
-# Générer un fichier avec uniquement les 150k meilleurs SNPs
-./plink --bfile Lobster1MB --extract top150k_snps.txt --make-bed --out Lobster1MB_topFST --allow-extra-chr
+# Filtrer les SNPs
+./plink --bfile Lobster_no_024712526 \
+      --extract top10k_snps.txt \
+      --make-bed \
+      --out Lobster_top10k –allow-extra-chr
 
-# Sous-échantillonnage Nord/Sud
-awk 'NR>1 && $5 == "Nord" {print $1, $1}' UMAP_zones_latitude.tsv > nord_ids.txt
-awk 'NR>1 && $5 == "Sud"  {print $1, $1}' UMAP_zones_latitude.tsv > sud_ids.txt
+# Créer le fichier .raw pour dosage
+./plink --bfile Lobster_top10k \
+      --recode A \
+      --out Lobster_top10k –allow-extra-chr
 
-plink2 --bfile Lobster1MB_topFST --keep nord_ids.txt --make-bed --out Lobster_Nord_topFST
-plink2 --bfile Lobster1MB_topFST --keep sud_ids.txt --make-bed --out Lobster_Sud_topFST
-
-# Recode en .raw pour l'analyse RDA
-plink2 --bfile Lobster_Nord_topFST --recode A --out Lobster_Nord_topFST
-plink2 --bfile Lobster_Sud_topFST --recode A --out Lobster_Sud_topFST
 
