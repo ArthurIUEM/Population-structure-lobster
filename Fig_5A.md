@@ -34,11 +34,11 @@ write.table(sud, "sud.txt", quote = FALSE, row.names = FALSE, col.names = FALSE,
 ```
 ./plink --bfile GONE_SUD --recode --out GONE_SUD --allow-extra-chr
 ```
-# Lancer GONE2 pour le nord
+## Lancer GONE2 pour le nord
 ```
 ./gone2 -r 1.1 Lobster_Nord_selected.tped
 ```
-# Lancer GONE2 pour le sud
+## Lancer GONE2 pour le sud
 ```
 ./gone2 -r 1.1 Lobster_Sud_selected.tped
 ```
