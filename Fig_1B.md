@@ -35,10 +35,11 @@ df <- read.table("UMAP_with_clusters_trimmed.txt", header = TRUE, sep = "\t")
 ```
 df$LATITUDE <- as.numeric(as.character(df$LATITUDE))
 ```
-# Définir la palette de couleurs : blue → green → yellow → orange → red
+# Définir la palette de couleurs
 ```
 color_palette <- c("red", "orange", "yellow", "green", "blue")
 ```
+# Faire le graphique
 ```
 ggplot(df, aes(x = UMAP1, y = UMAP2, color = LATITUDE)) +
   geom_point(size = 2, alpha = 0.8) +
