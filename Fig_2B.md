@@ -76,7 +76,7 @@ p2 <- pc_loading %>%
   geom_point(color = "red", alpha = 0.8, size = 1.5) +
   theme_minimal(base_size = 14) +
   labs(
-    title = "Zoom in on the sex chromosome (NW_024712523.1)",
+    title = "Zoom in on Benestan et al. (2016) loci (chromosome NW_024712523.1)",
     x = "Position on the chromosome",
     y = "PC2 loading"
   ) +
