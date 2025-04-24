@@ -1,6 +1,4 @@
-./plink --bfile Lobster_no_024712526 --extract snps_subset.txt --make-bed --out Lobster_5000SNPs --allow-extra-chr
-
-admixture Lobster_5000SNPs.bed K
+# R
 
 # Lire le fichier .bim
 bim <- read.table("Lobster_no_024712526.bim", header = FALSE)
@@ -16,6 +14,12 @@ subset_snps <- sample(bim$V2, 5000)
 write.table(subset_snps, file = "snps_subset.txt", 
             row.names = FALSE, col.names = FALSE, quote = FALSE)
 
+# Bash
+./plink --bfile Lobster_no_024712526 --extract snps_subset.txt --make-bed --out Lobster_5000SNPs --allow-extra-chr
+
+admixture Lobster_5000SNPs.bed K
+
+# R
 library(ggplot2)
 library(dplyr)
 library(tidyr)
