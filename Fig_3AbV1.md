@@ -4,9 +4,17 @@ library(ggplot2)
 library(sf)
 library(ggrepel)
 library(patchwork)
+library(dplyr)
+
+df <- read.delim("UMAP_zones_latitude.tsv")
+
+df <- df %>%
+  mutate(ZONE = recode(ZONE, "Nord" = "North", "Sud" = "South"))
+
+write.table(df, "UMAP_zones_latitude_modified.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 
 # Charger les données
-umap_data <- read_tsv("UMAP_zones_latitude.tsv")
+umap_data <- read_tsv("UMAP_zones_latitude_modified.tsv")
 merged_data <- read_excel("Merged_Lobster_Data.xlsx") %>%
   rename(FID = `Sample ID 2`)
 
@@ -32,19 +40,19 @@ custom_theme <- theme_minimal(base_size = 14) +
 base_map <- function(data, zone_label) {
   ggplot(data, aes(x = Long.x, y = LATITUDE)) +
     borders("world", fill = "gray90", colour = "gray50") +
-    geom_point(aes(size = n), color = ifelse(zone_label == "Nord", "blue", "red"), alpha = 0.7) +
-    scale_size_continuous(name = "Nombre d'individus") +
+    geom_point(aes(size = n), color = ifelse(zone_label == "North", "blue", "red"), alpha = 0.7) +
+    scale_size_continuous(name = "Number of individuals") +
     coord_cartesian(xlim = c(-66, -51), ylim = c(41, 52)) +
     labs(
-      title = paste("Carte des échantillons - Zone", zone_label),
+      title = paste("Sample map -", zone_label, "zone"),
       x = "Longitude", y = "Latitude"
     ) +
     custom_theme
 }
 
 # Créer les cartes Nord et Sud
-map_nord <- base_map(filter(localisation_summary, ZONE == "Nord"), "Nord")
-map_sud  <- base_map(filter(localisation_summary, ZONE == "Sud"), "Sud")
+map_nord <- base_map(filter(localisation_summary, ZONE == "North"), "North")
+map_sud  <- base_map(filter(localisation_summary, ZONE == "South"), "South")
 
 # Afficher côte à côte
 map_nord + map_sud
