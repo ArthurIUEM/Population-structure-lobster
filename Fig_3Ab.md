@@ -6,18 +6,18 @@ bim <- read.table("Lobster_no_024712526.bim", header = FALSE)
 # Vérification du nombre total de SNPs disponibles
 cat("Nombre total de SNPs dans le fichier :", nrow(bim), "\n")
 
-# Tirer 5 000 SNPs au hasard (sans remplacement)
+# Tirer 50 000 SNPs au hasard (sans remplacement)
 set.seed(42)  # pour rendre les tirages reproductibles
-subset_snps <- sample(bim$V2, 5000)
+subset_snps <- sample(bim$V2, 50000)
 
 # Sauvegarder la liste dans un fichier texte
 write.table(subset_snps, file = "snps_subset.txt", 
             row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 # Bash
-./plink --bfile Lobster_no_024712526 --extract snps_subset.txt --make-bed --out Lobster_5000SNPs --allow-extra-chr
+./plink --bfile Lobster_no_024712526 --extract snps_subset.txt --make-bed --out Lobster_50000SNPs --allow-extra-chr
 
-admixture Lobster_5000SNPs.bed K
+admixture Lobster_50000SNPs.bed K
 
 # R
 library(ggplot2)
