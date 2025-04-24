@@ -23,3 +23,29 @@ write.table(sud, "sud.txt", quote = FALSE, row.names = FALSE, col.names = FALSE,
 
 # Sud
 ./plink --bfile GONE_SUD --recode --out GONE_SUD --allow-extra-chr
+
+# Lire les fichiers de sortie GONE2
+nord <- read.table("Lobster_Nord_selected.tped_GONE2_Ne", header = TRUE)
+sud  <- read.table("Lobster_Sud_selected.tped_GONE2_Ne", header = TRUE)
+
+# Conversion de génération → année
+nord$Year <- 2029 - 7 * nord$Generation
+sud$Year  <- 2029 - 7 * sud$Generation
+
+# Tracer la courbe pour la zone Nord
+plot(nord$Year, nord$Ne_diploids, type = "l", col = "darksteelblueorange",
+     xlab = "Calendar year", ylab = "Effective population size (Ne)",
+     main = "Historical Ne estimates South zone",
+     ylim = c(0, 400000), lwd = 2, xlim = c(min(nord$Year, sud$Year), 2022))
+
+# Ajouter la courbe Sud
+lines(sud$Year, sud$Ne_diploids, col = "darkorange", lwd = 2)
+
+# Ajouter une légende
+legend("topright", legend = c("North Zone", "South Zone"),
+       col = c("steelblue", "darkorange"), lty = 1, lwd = 2)
+
+plot(sud$Year, sud$Ne_diploids, type = "l", col = "darkorange",
+     xlab = "Calendar year", ylab = "Effective population size (Ne)",
+     main = "Historical Ne estimates South zone",
+     ylim = c(0, 400000), lwd = 2, xlim = c(min(nord$Year, sud$Year), 2022))
