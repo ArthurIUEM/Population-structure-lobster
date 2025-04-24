@@ -46,13 +46,17 @@ axis_df <- fst_data[, .(center = mean(pos_cum)), by = CHR]
 ```
 ## Plot
 ```
-ggplot(fst_data, aes(x = pos_cum, y = FST, color = as.factor(CHR))) +
+ggplot(fst_data, aes(x = pos_cum, y = FST, color = as.factor(CHR.x))) +
   geom_point(size = 0.6) +
-  scale_color_manual(values = rep(c("black", "grey60"), length.out=length(unique(fst_data$CHR)))) +
-  scale_x_continuous(label = axis_df$CHR, breaks = axis_df$center) +
+  scale_color_manual(values = rep(c("black", "grey60"), length.out=length(unique(fst_data$CHR.x)))) +
+  scale_x_continuous(label = axis_df$CHR.x, breaks = axis_df$center) +
   labs(x = "Chromosome", y = "FST", title = "Manhattan plot of FST (Nord vs Sud)") +
   theme_bw() +
-  theme(legend.position = "none",
-        panel.grid.major.x = element_blank(),
-        panel.grid.minor.x = element_blank())
+  theme(
+    legend.position = "none",
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1)  # <--- texte en diagonale
+  )
+
 ```
