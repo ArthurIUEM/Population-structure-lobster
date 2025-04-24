@@ -26,7 +26,9 @@ custom_theme <- theme_minimal() +
 ```
 xlims <- range(c(df$PC1, df$PC2, df$PC3, df$PC4), na.rm = TRUE)
 ylims <- xlims  # pour un rapport 1:1
-
+```
+# Faire les graphiques
+```
 p1 <- ggplot(df, aes(x = PC1, y = PC2, color = LATITUDE)) +
   geom_point(size = 2, alpha = 0.8) +
   scale_color_gradientn(colors = color_palette) +
@@ -34,7 +36,8 @@ p1 <- ggplot(df, aes(x = PC1, y = PC2, color = LATITUDE)) +
   custom_theme +
   coord_fixed() +
   xlim(xlims) + ylim(ylims)
-
+```
+```
 p2 <- ggplot(df, aes(x = PC2, y = PC3, color = LATITUDE)) +
   geom_point(size = 2, alpha = 0.8) +
   scale_color_gradientn(colors = color_palette) +
@@ -42,7 +45,8 @@ p2 <- ggplot(df, aes(x = PC2, y = PC3, color = LATITUDE)) +
   custom_theme +
   coord_fixed() +
   xlim(xlims) + ylim(ylims)
-
+```
+```
 p3 <- ggplot(df, aes(x = PC3, y = PC4, color = LATITUDE)) +
   geom_point(size = 2, alpha = 0.8) +
   scale_color_gradientn(colors = color_palette) +
