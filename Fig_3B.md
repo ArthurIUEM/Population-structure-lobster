@@ -24,7 +24,7 @@ colnames(bim) <- c("CHR", "SNP", "CM", "BP", "A1", "A2")
 ```
 ## Merge pour récupérer les positions
 ```
-fst_data <- merge(fst, bim[, .(SNP, CHR, BP)], by = "SNP")
+fst_data <- merge(fst, bim[, .(SNP, BP)], by = "SNP")
 ```
 ## Nettoyage
 ```
@@ -46,7 +46,7 @@ axis_df <- fst_data[, .(center = mean(pos_cum)), by = CHR]
 ```
 ## Plot
 ```
-ggplot(fst_data, aes(x = pos_cum, y = FST, color = as.factor(CHR.x))) +
+ggplot(fst_data, aes(x = pos_cum, y = FST, color = as.factor(CHR))) +
   geom_point(size = 0.6) +
   scale_color_manual(values = rep(c("black", "grey60"), length.out=length(unique(fst_data$CHR.x)))) +
   scale_x_continuous(label = axis_df$CHR.x, breaks = axis_df$center) +
@@ -60,3 +60,6 @@ ggplot(fst_data, aes(x = pos_cum, y = FST, color = as.factor(CHR.x))) +
   )
 
 ```
+# Sortir le tableau
+unique_chr_table <- axis_df[order(center), .(CHR = CHR)]
+fwrite(unique_chr_table, "liste_chromosomes_ordonnees.tsv", sep = "\t")
