@@ -60,7 +60,7 @@ ggplot(fst_data, aes(x = pos_cum, y = FST, color = as.factor(CHR))) +
   )
 
 ```
-# Sortir le tableau
+## Sortir le tableau
 ```
 unique_chr_table <- axis_df[order(center), .(CHR = CHR)]
 fwrite(unique_chr_table, "liste_chromosomes_ordonnees.tsv", sep = "\t")
