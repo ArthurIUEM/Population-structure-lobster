@@ -298,4 +298,115 @@ plot_rda_with_var(rda_PC2, "PC2", lat_data)
 plot_rda_with_var(rda_PC3, "PC3", lat_data)
 plot_rda_with_var(rda_PC4, "PC4", lat_data)
 
+# Pour le groupe nord et sud
+# 🔹 Chargement des packages
+library(data.table)
+library(vegan)
+
+# 🔹 Paramètres
+threshold <- 1e-5
+pcs <- 1:4
+
+# 🔹 Extraction des SNPs significatifs après filtrage sur CHROM
+for (pc in pcs) {
+  file <- paste0("PC", pc, "_assoc.PC", pc, ".glm.linear")
+  
+  data <- read.table(file, header = TRUE)
+  colnames(data) <- c("CHROM", "POS", "ID", "REF", "ALT", "PROVISIONAL_REF", "A1", "OMITTEDA1_FREQ",
+                      "TEST", "OBS_CT", "BETA", "SE", "T_STAT", "P", "ERRCODE")
+  
+  data$CHROM <- as.character(data$CHROM)
+  data <- data[data$CHROM != "24712526", ]
+  
+  outliers <- data[data$P < threshold, "ID"]
+  
+  write.table(outliers, paste0("snps_PC", pc, ".txt"), row.names = FALSE, col.names = FALSE, quote = FALSE)
+}
+
+# 🔹 Chargement du fichier fam pour les latitudes
+fam <- fread("Lobster1MB.fam", header = FALSE)
+colnames(fam) <- c("FID", "IID", "PAT", "MAT", "SEX","Ok", "Latitude", "Longitude", "NAFO_Zone")
+lat_data <- fam[, .(ID = IID, Latitude)]
+
+# 🔹 Chargement des données de zone (Nord/Sud)
+zones <- fread("UMAP_zones_latitude.tsv")
+colnames(zones)[1] <- "ID"
+
+# 🔹 Chargement des données environnementales
+env_data_full <- fread("Filtered_ACP_Lobster_with_Lat_Env2.txt")
+cols_env <- c("FID", "Bathymetrie_moy", "Temperature_max", "Temperature_moy", "Temperature_min",
+              "Dissolution_max", "Dissolution_moy", "Dissolution_min",
+              "Salinity_max", "Salinity_moy", "Salinity_min")
+env_data <- env_data_full[, ..cols_env]
+
+# 🔹 Fusion des données environnementales et des zones
+env_data <- merge(env_data, zones[, .(ID, ZONE)], by.x = "FID", by.y = "ID")
+
+# 🔹 Fonction pour exécuter la RDA
+run_rda <- function(raw_prefix, env_data, pc_label) {
+  message(paste0("\n🔎 Analyse RDA pour ", pc_label))
+  
+  geno <- fread(paste0(raw_prefix, ".raw"))
+  geno <- geno[, !c("FID", "MAT", "PAT", "SEX", "PHENOTYPE"), with = FALSE]
+  setnames(geno, "IID", "ID")
+  setnames(env_data, "FID", "ID")
+  
+  common_ids <- intersect(geno$ID, env_data$ID)
+  geno <- geno[ID %in% common_ids]
+  env_data <- env_data[ID %in% common_ids]
+  setkey(geno, ID)
+  setkey(env_data, ID)
+  
+  env_data <- na.omit(env_data)
+  geno <- geno[ID %in% env_data$ID]
+  
+  geno_final <- geno[, !"ID"]
+  env_final <- env_data[, !"ID"]
+  
+  geno_final <- geno_final[, lapply(.SD, function(x) suppressWarnings(as.numeric(as.character(x))))]
+  geno_final <- geno_final[, which(colMeans(is.na(geno_final)) < 0.05), with = FALSE]
+  geno_final <- geno_final[, lapply(.SD, function(x) ifelse(is.na(x), mean(x, na.rm = TRUE), x))]
+  
+  env_final <- env_final[, which(sapply(env_final, is.numeric)), with = FALSE]
+  env_final <- env_final[, which(colSums(is.na(env_final)) < nrow(env_final)), with = FALSE]
+  env_final <- env_final[, which(sapply(env_final, sd, na.rm = TRUE) > 0), with = FALSE]
+  env_final <- as.data.table(as.data.frame(scale(env_final)))
+  
+  if (any(is.na(geno_final)) || any(is.na(env_final))) stop("❌ Données incomplètes après nettoyage.")
+  
+  message("🚀 Lancement de la RDA...")
+  rda_model <- rda(geno_final ~ ., data = env_final)
+  print(summary(rda_model))
+  
+  return(rda_model)
+}
+
+# 🔹 Fonction d'affichage avec choix d'axes
+plot_rda_axes <- function(rda_model, rda_label, axes = c(1, 2)) {
+  var_exp <- summary(rda_model)$constrained$importance[2, ]
+  x_lab <- paste0("RDA", axes[1], " (", round(var_exp[axes[1]] * 100, 1), "%)")
+  y_lab <- paste0("RDA", axes[2], " (", round(var_exp[axes[2]] * 100, 1), "%)")
+  
+  plot(rda_model, type = "n", choices = axes, main = paste("RDA -", rda_label, "axes", axes[1], "vs", axes[2]),
+       xlab = x_lab, ylab = y_lab)
+  points(rda_model, display = "sites", choices = axes, col = "grey30", pch = 16, cex = 0.8)
+  text(rda_model, display = "bp", choices = axes, col = "blue", cex = 1)
+  text(rda_model, display = "species", choices = axes, col = "red", cex = 0.6)
+}
+
+# 🔹 Lancement pour chaque PC et chaque zone
+zones_list <- c("Nord", "Sud")
+pcs_to_run <- 2:4
+
+for (zone in zones_list) {
+  for (pc in pcs_to_run) {
+    env_sub <- env_data[ZONE == zone]
+    rda_result <- run_rda(paste0("PC", pc, "_outliers"), copy(env_sub), paste0("PC", pc, " - ", zone))
+    
+    # Affichages multiples
+    plot_rda_axes(rda_result, paste0("PC", pc, " - ", zone), axes = c(1, 2))
+    plot_rda_axes(rda_result, paste0("PC", pc, " - ", zone), axes = c(2, 3))
+    plot_rda_axes(rda_result, paste0("PC", pc, " - ", zone), axes = c(3, 4))
+  }
+}
 
