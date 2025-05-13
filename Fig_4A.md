@@ -1,3 +1,62 @@
+# Extraction des données environnementales
+
+# Charger les bibliothèques
+library(tidyverse)
+library(data.table)
+library(readxl)
+library(sdmpredictors)
+library(raster)
+
+# Lire le fichier Excel avec FID, latitude et longitude
+env_points <- read_excel("Data for environmental data.xlsx")
+
+# Harmoniser les noms de colonnes
+colnames(env_points) <- tolower(colnames(env_points))
+names(env_points)[names(env_points) %in% c("lat", "latitude")] <- "lat"
+names(env_points)[names(env_points) %in% c("lon", "longitude")] <- "lon"
+
+# Éviter les timeouts réseau
+options(timeout = max(1000, getOption("timeout")))
+
+# Télécharger les couches environnementales du fond marin
+environment.bottom <- load_layers(c("BO2_tempmax_bdmean",
+                                    "BO2_tempmean_bdmean",
+                                    "BO2_tempmin_bdmean",
+                                    "BO2_dissoxmax_bdmean",
+                                    "BO2_dissoxmean_bdmean",
+                                    "BO2_dissoxmin_bdmean",
+                                    "BO2_salinitymax_bdmean",
+                                    "BO2_salinitymean_bdmean",
+                                    "BO2_salinitymin_bdmean"))
+
+# Télécharger la couche de bathymétrie
+bathymetry <- load_layers("BO_bathymean")
+
+# Extraire les coordonnées
+coordinates <- env_points[, c("lon", "lat")]
+
+# Extraire les valeurs environnementales
+env_extracted <- extract(environment.bottom, coordinates)
+depths <- extract(bathymetry, coordinates)
+
+# Créer le tableau final
+Env <- data.frame(FID = env_points$fid,
+                  lat = env_points$lat,
+                  lon = env_points$lon,
+                  depth = depths,
+                  env_extracted)
+
+# Sauvegarder en TSV
+write.table(Env,
+            "KessCod2020_Env.tsv",
+            col.names = TRUE,
+            row.names = FALSE,
+            quote = FALSE,
+            sep = "\t")
+
+
+
+
 # Sans coloration 
 # 🔹 Chargement des packages
 library(data.table)
