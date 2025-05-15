@@ -350,6 +350,7 @@ manhattan(
   logp = FALSE,                     # IMPORTANT : ne pas appliquer de log10
   genomewideline = 2 * sd(loadings_rda1),  # seuil de sur/sous-expression
   suggestiveline = FALSE,
+  ylim = c(0, 0.2),
   main = "Manhattan Plot - RDA1 (abs loadings) (Top 10K)",
   ylab = "abs(loading)"
 )
@@ -373,6 +374,7 @@ manhattan(
   logp = FALSE,
   genomewideline = 2 * sd(loadings_rda2),
   suggestiveline = FALSE,
+  ylim = c(0, 0.2),
   main = "Manhattan Plot - RDA2 (abs loadings) (Top 10K)",
   ylab = "abs(loading)"
 )
@@ -685,6 +687,7 @@ manhattan(
   logp = FALSE,                     # IMPORTANT : ne pas appliquer de log10
   genomewideline = 2 * sd(loadings_rda1),  # seuil de sur/sous-expression
   suggestiveline = FALSE,
+  ylim = c(0, 0.2),
   main = "Manhattan Plot - RDA1 (abs loadings) (Top 10K)",
   ylab = "abs(loading)"
 )
@@ -708,6 +711,7 @@ manhattan(
   logp = FALSE,
   genomewideline = 2 * sd(loadings_rda2),
   suggestiveline = FALSE,
+  ylim = c(0, 0.2),
   main = "Manhattan Plot - RDA2 (abs loadings) (Top 10K)",
   ylab = "abs(loading)"
 )
@@ -1008,6 +1012,7 @@ manhattan(
   logp = FALSE,                     # IMPORTANT : ne pas appliquer de log10
   genomewideline = 2 * sd(loadings_rda1),  # seuil de sur/sous-expression
   suggestiveline = FALSE,
+  ylim = c(0, 0.2),
   main = "Manhattan Plot - RDA1 (abs loadings) (Top 10K)",
   ylab = "abs(loading)"
 )
@@ -1031,6 +1036,7 @@ manhattan(
   logp = FALSE,
   genomewideline = 2 * sd(loadings_rda2),
   suggestiveline = FALSE,
+  ylim = c(0, 0.2),
   main = "Manhattan Plot - RDA2 (abs loadings) (Top 10K)",
   ylab = "abs(loading)"
 )
