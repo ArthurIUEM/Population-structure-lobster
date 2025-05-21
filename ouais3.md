@@ -73,3 +73,19 @@ ggplot(pca_ind, aes(x = PC3, y = PC4, color = Latitude)) +
   labs(title = "ACP environnementale : PC3 vs PC4",
        x = "PC3", y = "PC4", color = "Latitude") +
   theme_minimal()
+
+
+df_plot <- data.frame(
+  PC1_env = env_pca$x[, 1],
+  PC3_gen = env_all$PC3,      # Remplace par le vrai nom si nécessaire
+  Latitude = env_all$Latitude # Pour la couleur éventuellement
+)
+
+ggplot(df_plot, aes(x = PC1_env, y = PC3_gen, color = Latitude)) +
+  geom_point(size = 2) +
+  scale_color_viridis_c() +
+  labs(title = "PC1 environnementale vs PC3 génétique",
+       x = "PC1 environnementale",
+       y = "PC3 génétique",
+       color = "Latitude") +
+  theme_minimal()
