@@ -86,3 +86,53 @@ abline(v = 1945, col = "red", lty = 2, lwd = 1.5)
 
 # Remettre le layout par défaut
 par(mfrow = c(1, 1))
+
+
+# Lire les fichiers de sortie GONE2
+nord <- read.table("Lobster_Nord_selected.tped_GONE2_Ne", header = TRUE)
+sud  <- read.table("Lobster_Sud_selected.tped_GONE2_Ne", header = TRUE)
+
+# Conversion Générations → Années
+nord$Year <- 972 + 7 * nord$Generation
+sud$Year  <- 972 + 7 * sud$Generation
+
+# Déterminer la plage des années (commune pour cohérence visuelle)
+year_range <- range(c(nord$Year, sud$Year))
+
+# Dates clés à afficher
+important_years_nord <- sort(unique(c(min(nord$Year), 1455, 1868, max(nord$Year))))
+important_years_sud  <- sort(unique(c(min(sud$Year), 1518, 1945, max(sud$Year))))
+# Fusion des deux jeux pour l’axe commun
+important_years <- sort(unique(c(important_years_nord, important_years_sud)))
+
+# Afficher deux graphiques côte à côte
+par(mfrow = c(1, 2), mar = c(7, 4, 4, 2))  # marge basse augmentée pour texte incliné
+
+# Graphique Nord
+plot(nord$Year, nord$Ne_diploids, type = "l", col = "steelblue",
+     xlab = "Calendar year", ylab = "Effective population size (Ne)",
+     main = "North zone", ylim = c(0, 52000), lwd = 2, xlim = year_range, xaxt = "n")
+
+axis(1, at = important_years_nord, labels = FALSE)
+text(x = important_years_nord, y = par("usr")[3] - 2000,
+     labels = important_years_nord, srt = 45, adj = 1, xpd = TRUE, cex = 0.8)
+
+# Lignes verticales pour le nord
+abline(v = 1455, col = "pink", lty = 2, lwd = 1.5)
+abline(v = 1868, col = "purple", lty = 2, lwd = 1.5)
+
+# Graphique Sud
+plot(sud$Year, sud$Ne_diploids, type = "l", col = "darkorange",
+     xlab = "Calendar year", ylab = "Effective population size (Ne)",
+     main = "South zone", ylim = c(0, 400000), lwd = 2, xlim = year_range, xaxt = "n")
+
+axis(1, at = important_years_sud, labels = FALSE)
+text(x = important_years_sud, y = par("usr")[3] - 10000,
+     labels = important_years_sud, srt = 45, adj = 1, xpd = TRUE, cex = 0.8)
+
+# Lignes verticales pour le sud
+abline(v = 1518, col = "green", lty = 2, lwd = 1.5)
+abline(v = 1945, col = "red", lty = 2, lwd = 1.5)
+
+# Remettre le layout par défaut
+par(mfrow = c(1, 1))
