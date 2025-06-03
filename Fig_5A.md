@@ -59,7 +59,7 @@ par(mfrow = c(1, 2), mar = c(7, 4, 4, 2))  # marge basse augmentée pour texte i
 # Graphique Nord
 plot(nord$Year, nord$Ne_diploids, type = "l", col = "steelblue",
      xlab = "Calendar year", ylab = "Effective population size (Ne)",
-     main = "North zone", ylim = c(0, 52000), lwd = 2, xlim = year_range, xaxt = "n")
+     main = "(A) North zone", ylim = c(0, 52000), lwd = 2, xlim = year_range, xaxt = "n")
 
 years_to_show_nord <- nord$Year[nord$Year %% 3 == 0]
 axis(1, at = years_to_show_nord, labels = FALSE)
@@ -67,13 +67,13 @@ text(x = years_to_show_nord, y = par("usr")[3] - 1000,
      labels = years_to_show_nord, srt = 45, adj = 1, xpd = TRUE, cex = 0.8)
 
 # Lignes verticales pour le nord
-abline(v = 1455, col = "steelblue", lty = 2, lwd = 1.5)
-abline(v = 1868, col = "steelblue", lty = 2, lwd = 1.5)
+abline(v = 1455, col = "pink", lty = 2, lwd = 1.5)
+abline(v = 1868, col = "purple", lty = 2, lwd = 1.5)
 
 # Graphique Sud
 plot(sud$Year, sud$Ne_diploids, type = "l", col = "darkorange",
      xlab = "Calendar year", ylab = "Effective population size (Ne)",
-     main = "South zone", ylim = c(0, 400000), lwd = 2, xlim = year_range, xaxt = "n")
+     main = "(B) South zone", ylim = c(0, 400000), lwd = 2, xlim = year_range, xaxt = "n")
 
 years_to_show_sud <- sud$Year[sud$Year %% 3 == 0]
 axis(1, at = years_to_show_sud, labels = FALSE)
@@ -81,8 +81,8 @@ text(x = years_to_show_sud, y = par("usr")[3] - 10000,
      labels = years_to_show_sud, srt = 45, adj = 1, xpd = TRUE, cex = 0.8)
 
 # Lignes verticales pour le sud
-abline(v = 1413, col = "darkorange", lty = 2, lwd = 1.5)
-abline(v = 1945, col = "darkorange", lty = 2, lwd = 1.5)
+abline(v = 1518, col = "green", lty = 2, lwd = 1.5)
+abline(v = 1945, col = "red", lty = 2, lwd = 1.5)
 
 # Remettre le layout par défaut
 par(mfrow = c(1, 1))
